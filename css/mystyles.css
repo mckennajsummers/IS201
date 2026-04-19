@@ -1,0 +1,57 @@
+/* Background image */
+body {
+    background-color: #c8f3f1;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Navigation */
+.nav {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.nav a {
+    color: #000;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+/* Artist Cards */
+.artist-card {
+    background-color: white;
+    width: 350px;
+    padding: 15px;
+    margin: 20px auto;
+    border: 2px solid #ccc;
+    box-shadow: 3px 3px 5px gray;
+}
+
+.artist-img {
+    width: 100%;
+    border: 1px solid #999;
+}
+
+/* Tableau Section */
+.tableau-section {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 20px;
+    margin: 30px;
+    border: 2px solid #ccc;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+}

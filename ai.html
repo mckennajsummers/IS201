@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hangman Game</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7f7;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #wordDisplay {
+            font-size: 30px;
+            letter-spacing: 10px;
+            margin: 20px;
+        }
+
+        #letters button {
+            margin: 5px;
+            padding: 10px;
+            width: 35px;
+            cursor: pointer;
+        }
+
+        /* Hangman drawing container */
+        #hangman {
+            width: 200px;
+            height: 250px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        /* Gallows */
+        .pole {
+            position: absolute;
+            background-color: black;
+        }
+
+        #base { width: 150px; height: 5px; bottom: 0; left: 25px; }
+        #vertical { width: 5px; height: 200px; left: 50px; bottom: 5px; }
+        #top { width: 100px; height: 5px; left: 50px; top: 0; }
+        #rope { width: 2px; height: 30px; left: 148px; top: 5px; }
+
+        /* Body parts */
+        .part {
+            display: none;
+            position: absolute;
+        }
+
+        /* Friendlier head */
+        #head {
+            width: 40px;
+            height: 40px;
+            border: 3px solid black;
+            border-radius: 50%;
+            left: 128px;
+            top: 35px;
+            background-color: white;
+        }
+
+        /* Eyes */
+        .eye {
+            width: 5px;
+            height: 5px;
+            background-color: black;
+            border-radius: 50%;
+            position: absolute;
+            display: none;
+        }
+
+        #eye1 { left: 140px; top: 48px; }
+        #eye2 { left: 155px; top: 48px; }
+
+        /* Smile */
+        #smile {
+            width: 20px;
+            height: 10px;
+            border: 2px solid black;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            position: absolute;
+            left: 138px;
+            top: 60px;
+            display: none;
+        }
+
+        #body {
+            width: 3px;
+            height: 60px;
+            background-color: black;
+            left: 148px;
+            top: 75px;
+        }
+
+        #arm1 {
+            width: 40px;
+            height: 3px;
+            background-color: black;
+            left: 110px;
+            top: 95px;
+        }
+
+        #arm2 {
+            width: 40px;
+            height: 3px;
+            background-color: black;
+            left: 148px;
+            top: 95px;
+        }
+
+        #leg1 {
+            width: 3px;
+            height: 40px;
+            background-color: black;
+            left: 135px;
+            top: 135px;
+        }
+
+        #leg2 {
+            width: 3px;
+            height: 40px;
+            background-color: black;
+            left: 160px;
+            top: 135px;
+        }
+
+        #message {
+            font-size: 22px;
+            margin-top: 20px;
+        }
+
+        #restart {
+            margin-top: 15px;
+            padding: 10px 20px;
+            display: none;
+        }
+
+        /* Whole word guess box */
+        #guessBox {
+            margin-top: 20px;
+        }
+
+        #guessBox input {
+            padding: 5px;
+            width: 150px;
+        }
+
+        #guessBox button {
+            padding: 5px 10px;
+        }
+
+        /* Hint button */
+        #hintBtn {
+            margin-top: 15px;
+            padding: 8px 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Hangman Game</h1>
+
+    <div id="hangman">
+        <div id="base" class="pole"></div>
+        <div id="vertical" class="pole"></div>
+        <div id="top" class="pole"></div>
+        <div id="rope" class="pole"></div>
+
+        <div id="head" class="part"></div>
+        <div id="eye1" class="eye"></div>
+        <div id="eye2" class="eye"></div>
+        <div id="smile"></div>
+
+        <div id="body" class="part"></div>
+        <div id="arm1" class="part"></div>
+        <div id="arm2" class="part"></div>
+        <div id="leg1" class="part"></div>
+        <div id="leg2" class="part"></div>
+    </div>
+
+    <div id="wordDisplay"></div>
+
+    <div id="letters"></div>
+
+    <!-- Hint button -->
+    <button id="hintBtn" onclick="useHint()">Hint</button>
+
+    <!-- Whole word guess -->
+    <div id="guessBox">
+        <input type="text" id="fullGuess" placeholder="Guess the whole word">
+        <button onclick="guessWholeWord()">Submit</button>
+    </div>
+
+    <div id="message"></div>
+
+    <button id="restart" onclick="startGame()">Play Again</button>
+
+    <script>
+        const words = ["swift", "music", "hangman", "puzzle", "bts", "morgan", "country"];
+        let chosenWord = "";
+        let displayWord = [];
+        let wrongGuesses = 0;
+
+        const parts = ["head", "body", "arm1", "arm2", "leg1", "leg2", "eye1", "eye2", "smile"];
+
+        function startGame() {
+            chosenWord = words[Math.floor(Math.random() * words.length)];
+            displayWord = Array(chosenWord.length).fill("_");
+            wrongGuesses = 0;
+
+            document.getElementById("wordDisplay").textContent = displayWord.join(" ");
+            document.getElementById("message").textContent = "";
+            document.getElementById("restart").style.display = "none";
+            document.getElementById("fullGuess").value = "";
+
+            parts.forEach(p => document.getElementById(p).style.display = "none");
+
+            createLetterButtons();
+        }
+
+        function createLetterButtons() {
+            const container = document.getElementById("letters");
+            container.innerHTML = "";
+
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i).toLowerCase();
+                const btn = document.createElement("button");
+                btn.textContent = letter;
+
+                btn.onclick = () => guessLetter(letter, btn);
+
+                container.appendChild(btn);
+            }
+        }
+
+        function guessLetter(letter, button) {
+            button.disabled = true;
+
+            if (chosenWord.includes(letter)) {
+                for (let i = 0; i < chosenWord.length; i++) {
+                    if (chosenWord[i] === letter) {
+                        displayWord[i] = letter;
+                    }
+                }
+                document.getElementById("wordDisplay").textContent = displayWord.join(" ");
+
+                if (!displayWord.includes("_")) {
+                    document.getElementById("message").textContent = "You won!";
+                    endGame();
+                }
+            } else {
+                showNextPart();
+            }
+        }
+
+        function guessWholeWord() {
+            const guess = document.getElementById("fullGuess").value.toLowerCase();
+
+            if (guess === chosenWord) {
+                document.getElementById("wordDisplay").textContent = chosenWord.split("").join(" ");
+                document.getElementById("message").textContent = "You won!";
+                endGame();
+            } else {
+                showNextPart();
+            }
+        }
+
+        /* HINT FEATURE */
+        function useHint() {
+            // Find hidden letters
+            const hiddenIndexes = [];
+            for (let i = 0; i < displayWord.length; i++) {
+                if (displayWord[i] === "_") {
+                    hiddenIndexes.push(i);
+                }
+            }
+
+            // If no hidden letters left
+            if (hiddenIndexes.length === 0) return;
+
+            // Pick a random hidden letter
+            const randomIndex = hiddenIndexes[Math.floor(Math.random() * hiddenIndexes.length)];
+            const letterToReveal = chosenWord[randomIndex];
+
+            // Reveal it
+            displayWord[randomIndex] = letterToReveal;
+            document.getElementById("wordDisplay").textContent = displayWord.join(" ");
+
+            // Count as a wrong guess
+            showNextPart();
+
+            // Check win
+            if (!displayWord.includes("_")) {
+                document.getElementById("message").textContent = "You won!";
+                endGame();
+            }
+        }
+
+        function showNextPart() {
+            document.getElementById(parts[wrongGuesses]).style.display = "block";
+            wrongGuesses++;
+
+            if (wrongGuesses === parts.length) {
+                document.getElementById("message").textContent = "You lost! The word was: " + chosenWord;
+                endGame();
+            }
+        }
+
+        function endGame() {
+            document.querySelectorAll("#letters button").forEach(btn => btn.disabled = true);
+            document.getElementById("restart").style.display = "inline-block";
+        }
+
+        startGame();
+    </script>
+
+</body>
+</html>
